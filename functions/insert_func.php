@@ -1,9 +1,11 @@
 <?php
 include '../class/Insert.class.php';
+require '../Encryption.php';
+$nonceValue = 'nonce_value';
 
 $con_new_user = new Insert_class;
 
- if(isset($_POST['submit'])){
+ //if(isset($_POST['submit'])){
 
 
     $fname=mysqli_real_escape_string($con_new_user->connection,$_POST['fname']);
@@ -13,16 +15,30 @@ $con_new_user = new Insert_class;
     $service_type=mysqli_real_escape_string($con_new_user->connection,$_POST['service_type']);
     $appt_date=mysqli_real_escape_string($con_new_user->connection,$_POST['appt_date']);
     $appt_time=mysqli_real_escape_string($con_new_user->connection,$_POST['appt_time']);
-    $Encrypt_password=password_hash($password,PASSWORD_DEFAULT);
 
-$insert = $con_new_user->insert_user($fname,$lname,$email,$phone,$service_type,$appt_date,$appt_time);
+
+// create object of encryption method
+$Encryption = new Encryption();
+
+// decrypt encrypted data before inserting to db
+$fnameDecrypted = $Encryption->decrypt($fname, $nonceValue);
+$lnameDecrypted = $Encryption->decrypt($lname, $nonceValue);
+$emailDecrypted = $Encryption->decrypt($email, $nonceValue);
+$phoneDecrypted = $Encryption->decrypt($phone, $nonceValue);
+$service_typeDecrypted = $Encryption->decrypt($service_type, $nonceValue);
+$appt_dateDecrypted = $Encryption->decrypt($appt_date, $nonceValue);
+$appt_timeDecrypted = $Encryption->decrypt($appt_time, $nonceValue);
+
+//$insert = $con_new_user->insert_user($fname,$lname,$email,$phone,$service_type,$appt_date,$appt_time);//old code 
+$insert = $con_new_user->insert_user($fnameDecrypted,$lnameDecrypted,$emailDecrypted,$phoneDecrypted,$service_typeDecrypted,$appt_dateDecrypted,$appt_timeDecrypted);
 
 if($insert){
 
    // header('location:../index.php');
 
-   echo '<script>alert("Success")</script>';
-   echo "<script>window.location.href='../index.php';</script>";
+  // echo '<script>alert("Success")</script>';
+  echo "success";
+  // echo "<script>window.location.href='../index.php';</script>";
 
 }
 else{
@@ -82,5 +98,5 @@ else{
 // //   echo "Message sending failed.";
 // //  }
 
-}
+//}
 ?>

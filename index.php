@@ -1,3 +1,6 @@
+<?php
+    $nonceValue = 'nonce_value';
+?>
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -118,20 +121,20 @@
          </div>
       </div>
       <div id="book_appt"class="form-wrapper section scrollspy"style="box-shadow:1px 1px 5px 1px #eee;overflow:hidden;width:400px;height:auto;padding:20px; margin:100px auto;border:1px solid #eee;background:#ffff;">
-         <form action="functions/insert_func.php" style="max-width:100%;border:px solid red;" method="post">
+         <form id="ApptForm" action="" style="max-width:100%;border:px solid red;" method="post">
             <h4>Book Appointment</h4>
-            <input type="text" placeholder="Firstname" name="fname"><br>
-            <input type="text" placeholder="Lastname" name="lname"><br>
-            <input type="email" placeholder="Email" name="email"><br>
-            <input type="number" placeholder="Mobile" name="phone"><br>
-            <select name="service_type" id="">
+            <input type="text" placeholder="Firstname" id="fname" name="fname"><br>
+            <input type="text" placeholder="Lastname" id="lname" name="lname"><br>
+            <input type="email" placeholder="Email" id="email" name="email"><br>
+            <input type="number" placeholder="Mobile" id="phone" name="phone"><br>
+            <select name="service_type" id="service_type">
                <option value="" disabled selected >Select service type</option>
                <option value="Tooth Extraction">Tooth Extraction</option>
                <option value="New Dental Braces">New Dental Braces</option>
                <option value=" Braces Adjustment">Braces Adjustment</option>
             </select>
-            <input type="date" placeholder="Date" name="appt_date"><br>
-            <select name="appt_time" id="">
+            <input type="date" placeholder="Date" id="appt_date" name="appt_date"><br>
+            <select name="appt_time" id="appt_time">
                <option value="" disabled selected >Select Time</option>
                <option value="08:00">8:00 AM</option>
                <option value="09:00">9:00 AM</option>
@@ -152,7 +155,16 @@
             <h6 class="center-align" style="color:white;" >&copy; All Rights Reserved 2022</h6>
          </div>
       </div>
+           
+
+<!-- Crypto js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
+<!-- Encryption js -->
+<script src="js/Encryption.js"></script>
       <script src="materialize/js/materialize.min.js"></script>
+
+
       <script>
          $(document).ready(function () {
              $('select').material_select();
@@ -173,5 +185,57 @@
           	});
                  
       </script>
+
+      <!-- submit appointment -->
+      <script>
+            $(document).ready(function() {
+                
+                // Submit form
+                $("#ApptForm").submit(function (event) {
+                    event.preventDefault();
+
+                    var fname = $("#fname").val();
+                    var lname = $("#lname").val();
+                    var email = $("#email").val();
+                    var phone = $("#phone").val();
+                    var service_type = $("#service_type").val();
+                    var appt_date = $("#appt_date").val();
+                    var appt_time = $("#appt_time").val();
+
+                    var nonceValue = '<?php echo $nonceValue; ?>';
+                    
+                    // Encrypt form data
+                    let encryption = new Encryption();
+                    var fnameEncrypted = encryption.encrypt(fname, nonceValue);
+                    var lnameEncrypted = encryption.encrypt(lname, nonceValue);
+                    var emailEncrypted = encryption.encrypt(email, nonceValue);
+                    var phoneEncrypted = encryption.encrypt(phone, nonceValue);
+                    var service_typeEncrypted = encryption.encrypt(service_type, nonceValue);
+                    var appt_dateEncrypted = encryption.encrypt(appt_date, nonceValue);
+                    var appt_timeEncrypted = encryption.encrypt(appt_time, nonceValue);
+
+                    // Submit form using Ajax
+                    $.ajax({
+                        url: 'functions/insert_func.php',
+                        method: 'POST',
+                        data: {
+                            fname:        fnameEncrypted,
+                            lname:        lnameEncrypted,
+                            email:        emailEncrypted,
+                            phone:        phoneEncrypted,
+                            service_type: service_typeEncrypted,
+                            appt_date:    appt_dateEncrypted,
+                            appt_time:    appt_timeEncrypted
+                        },
+                        success:function(res) {
+                            console.log(res);
+                            $("#ApptForm")[0].reset();
+                            alert("success!");
+                        }
+                    });
+
+                });
+            });
+        </script>
    </body>
 </html>
